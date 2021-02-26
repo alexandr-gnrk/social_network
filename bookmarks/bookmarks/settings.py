@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ['c987f400d36d.ngrok.io']
 # Application definition
 
 INSTALLED_APPS = [
+    'sorl.thumbnail',
     'account.apps.AccountConfig',
     'images.apps.ImagesConfig',
     'django.contrib.admin',
