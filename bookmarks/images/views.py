@@ -1,3 +1,34 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .forms import ImageCreateForm
 
-# Create your views here.
+
+@login_required
+def image_create(request):
+    if request.method == 'POST':
+        # Форма отправлена.
+        form = ImageCreateForm(data=request.POST)
+        # print('Form', form)
+        # print()
+        # print('Form.is_valid', form.is_valid())
+        # print('Form.cleaned_url', form.clean_url())
+
+        if form.is_valid():
+            # Данные формы валидны.
+            cd = form.cleaned_data
+            new_item = form.save(commit=False)
+            # Добавляем пользователя к созданному объекту.
+            new_item.user = request.user
+            new_item.save()
+            print('New item', new_item)
+            messages.success(request, 'Image added successfully')
+            # Перенаправляем пользователя на страницу сохраненного изображения.
+            return redirect(new_item.get_absolute_url())
+    else:
+        # Заполняем форму данными из GET-запроса.
+        form = ImageCreateForm(data=request.GET)
+        
+    return render(request,
+        'images/image/create.html',
+        {'section': 'images', 'form': form})
