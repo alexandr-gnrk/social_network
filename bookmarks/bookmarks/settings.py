@@ -27,7 +27,7 @@ SECRET_KEY = '&xl7%)@^69lx%xc&o78=qm)ks_0g_ryy$!im(3ls=+ws*+jtqm'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'c987f400d36d.ngrok.io']
+ALLOWED_HOSTS = ['127.0.0.1', 'c987f400d36d.ngrok.io', 'localhost']
 
 
 # Application definition
@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'sorl.thumbnail',
     'account.apps.AccountConfig',
     'images.apps.ImagesConfig',
+    'actions.apps.ActionsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
