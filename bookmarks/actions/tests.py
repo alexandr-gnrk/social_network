@@ -53,7 +53,7 @@ class ActionsTestCase(unittest.TestCase):
 
 		#utils.create_action returns True if user liked an image
 		result = utils.create_action(user, 'liked', image)	
-		self.assertTrue(result)	
+		self.assertTrue(result)
 
 
 
