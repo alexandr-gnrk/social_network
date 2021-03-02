@@ -17,4 +17,4 @@ class ProfileFactory(factory.django.DjangoModelFactory):
 
 class ImageFactory(factory.django.DjangoModelFactory):
 	class Meta:
-		model = Image 
+		model = Image
