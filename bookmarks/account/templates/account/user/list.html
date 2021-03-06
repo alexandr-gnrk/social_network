@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load thumbnail %}
+
+{% block title %}People{% endblock %}
+
+{% block content %}
+    <h1>People</h1>
+    <div id="people-list" class="row row-cols-auto mt-5">
+    {% for user in users %}
+        <div class="user col">
+            <a class="text-success" href="{{ user.get_absolute_url }}">
+                {% thumbnail user.profile.photo "180x180" crop="100%" as im %}
+                    <img class="rounded-circle" src="{{ im.url }}">
+                {% endthumbnail %}
+            </a>
+            <div class="info text-center mt-3">
+                <a class="title text-decoration-none text-success" href="{{ user.get_absolute_url }}">{{ user.get_full_name }}</a>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+{% endblock %}
