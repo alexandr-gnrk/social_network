@@ -38,3 +38,19 @@ class RegisterSerializer(serializers.ModelSerializer):
 		Profile.objects.create(user=user)
 		create_action(user, 'has created an account')
 		return user
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+	""" Serializer for password change endpoint.
+	"""
+	old_password = serializers.CharField(required=True)
+	new_password = serializers.CharField(required=True)
+
+	class Meta:
+		model = User
+
+
+
+
+
+

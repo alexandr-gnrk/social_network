@@ -2,6 +2,9 @@ from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.viewsets import ModelViewSet
+
 from .forms import ImageCreateForm
 from .models import Image
 from django.http import JsonResponse, HttpResponse
@@ -12,6 +15,8 @@ from actions.utils import create_action
 
 import redis
 from django.conf import settings
+
+from .serializers import ImageSerializer
 
 r = redis.StrictRedis(host=settings.REDIS_HOST,
                       port=settings.REDIS_PORT,
@@ -116,3 +121,13 @@ def image_ranking(request):
                   'images/image/ranking.html',
                   {'section': 'images',
                    'most_viewed': most_viewed})
+
+
+# API
+class ImageViewSet(ModelViewSet):
+    queryset = Image.objects.all()
+    serializer_class = ImageSerializer
+    ordering = ['-created']
+    ordering_fields = ['user', 'title', 'created', 'users_like', 'total_likes']
+    # authentication_classes = {SessionAuthentication, BasicAuthentication, TokenAuthentication}
+    # permission_classes = [IsAuthenticated]

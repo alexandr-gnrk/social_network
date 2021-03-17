@@ -7,8 +7,9 @@
 		        <router-link to="/" class="link"><span>My dashboard</span></router-link>
 		      </v-btn>
 		      <v-btn text>
-		        Images
-		      </v-btn>
+			  	  <router-link :to = "{ name:'image-list' }" class="link"><span>Images</span></router-link>
+          </v-btn>				
+				</v-btn>
 		      <v-btn text>
 		        People
 		      </v-btn> 

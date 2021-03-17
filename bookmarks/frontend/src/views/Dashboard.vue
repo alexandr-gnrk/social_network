@@ -1,7 +1,8 @@
 <template>
   <div class="dashboard">
     <h1>Dashboard</h1>
-    <p>Welcome to your dashboard, <strong>{{ user }}</strong>. You can edit your profile or change your password.</p>
+    <p>Welcome to your dashboard, <strong>{{ user }}</strong>. You can edit your profile or 
+      <router-link :to = "{ name:'change-password' }">change your password</router-link>.</p>
     <p>For now, you have bookmarked 2 images.</p>
     <p>Drag the following button to your bookmarks toolbar to bookmark images from other websites Bookmark it</p>
     <p>You can also edit your profile or change your password.</p>

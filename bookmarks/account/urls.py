@@ -1,7 +1,7 @@
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from . import views
-
+from .views import ChangePasswordView
 
 urlpatterns = [
     path('', views.dashboard, name='dashboard'),
@@ -27,5 +27,6 @@ urlpatterns = [
     #api urls
     path('api/auth/', views.AuthAPIView.as_view(), name='api_auth'),
     path('api/register/', views.RegisterAPIView.as_view(), name='api_register'),
+    path('api/change-password/', ChangePasswordView.as_view(), name='change-password'),
 ]
 

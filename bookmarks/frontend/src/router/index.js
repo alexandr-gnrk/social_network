@@ -4,11 +4,13 @@ import Dashboard from '../views/Dashboard.vue'
 import Register from '../views/Register.vue'
 import Login from '../views/Login.vue'
 import Logout from '../views/Logout.vue'
+import ChangePassword from '../views/ChangePassword'
+import ImageList from '../views/ImageList'
 
 
 Vue.use(VueRouter)
 
-const PUBLIC_PATH_NAMES = ['login', 'register', 'logout']
+const PUBLIC_PATH_NAMES = ['login', 'register', 'logout', 'change-password']
 
 const routes = [
   {
@@ -30,7 +32,17 @@ const routes = [
     path: '/logout',
     name: 'logout',
     component: Logout
-  }
+  },
+  {
+    path: '/change-password',
+    name: 'change-password',
+    component: ChangePassword
+  },
+  {
+    path: '/images',
+    name: 'image-list',
+    component: ImageList
+  },
 ]
 
 const router = new VueRouter({

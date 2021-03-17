@@ -4,9 +4,15 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.decorators.http import require_POST
 from django.contrib.auth import authenticate
 import json
+
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
 from common.decorators import ajax_required
 from .forms import UserRegistrationForm, UserEditForm, ProfileEditForm
@@ -17,8 +23,8 @@ from actions.utils import create_action
 from actions.models import Action
 
 #API
-from rest_framework import generics, permissions
-from .api.serializers import RegisterSerializer
+from rest_framework import generics, permissions, status
+from .api.serializers import RegisterSerializer, ChangePasswordSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_jwt.settings import api_settings
@@ -114,6 +120,7 @@ class RegisterAPIView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny,]
     serializer_class = RegisterSerializer
 
+
 class AuthAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -131,3 +138,38 @@ class AuthAPIView(APIView):
                 return Response({'detail': 'Your account has been disabled'}, status=400)
             return Response({'detail': 'Invalid username or password'}, status=400)
         return Response({'detail': 'User does not exist'}, status=400)
+
+
+class ChangePasswordView(generics.UpdateAPIView):
+    """ An endpoint for changing password.
+    """
+    serializer_class = ChangePasswordSerializer
+    model = User
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = {SessionAuthentication, TokenAuthentication, JSONWebTokenAuthentication}
+
+    # @method_decorator(ensure_csrf_cookie)
+    def get_object(self, queryset=None):
+        obj = self.request.user
+        return obj
+
+    # @method_decorator(ensure_csrf_cookie)
+    def update(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            # Check old password
+            if not self.object.check_password(serializer.data.get("old_password")):
+                return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
+            # set_password also hashes the password that the user will get
+            self.object.set_password(serializer.data.get("new_password"))
+            self.object.save()
+            response = {
+                'status': 'success',
+                'code': status.HTTP_200_OK,
+                'message': 'Password updated successfully',
+                'data': []
+            }
+            return Response(response)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
