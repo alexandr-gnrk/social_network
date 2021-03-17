@@ -170,3 +170,4 @@ pnpm-debug.log*
 
 
 /bookmarks/frontend/.editorconfig
+/.idea/
