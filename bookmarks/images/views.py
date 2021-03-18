@@ -133,7 +133,6 @@ class ImageViewSet(ModelViewSet):
     serializer_class = ImageSerializer
     ordering = ['-created']
     ordering_fields = ['user', 'title', 'created', 'users_like', 'total_likes']
-    # authentication_classes = {SessionAuthentication, BasicAuthentication, TokenAuthentication}
     permission_classes = [IsAuthenticated]
 
     def retrieve(self, request, *args, **kwargs):
