@@ -146,7 +146,8 @@ class ChangePasswordView(generics.UpdateAPIView):
     serializer_class = ChangePasswordSerializer
     model = User
     permission_classes = (IsAuthenticated,)
-    authentication_classes = {SessionAuthentication, TokenAuthentication, JSONWebTokenAuthentication}
+    # authentication_classes = {SessionAuthentication, TokenAuthentication, JSONWebTokenAuthentication}
+    # permission_classes = (permissions.AllowAny,)
 
     # @method_decorator(ensure_csrf_cookie)
     def get_object(self, queryset=None):

@@ -52,9 +52,16 @@ export default {
     }
   },
   async created () {
-    var response = await fetch('http://localhost:8000/images/api/');
+    let token = localStorage.getItem('token');
+    let requestOptions = {
+      method: "GET",
+      headers: {
+        'Content-Type': 'application/json',
+        "Authorization": "JWT " + token,
+      },
+    }
+    var response = await fetch('http://localhost:8000/images/api/', requestOptions);
     this.images = await response.json();
-  }
-
+  },
 }
 </script>

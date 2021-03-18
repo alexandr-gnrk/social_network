@@ -150,10 +150,10 @@ REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
 REDIS_DB = 0
 
-#Django Rest Framework configs
+# Django Rest Framework configs
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        #'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
     ],
@@ -162,7 +162,7 @@ REST_FRAMEWORK = {
     # ]
 }
 
-#Django Rest Framework JWT configs
+# Django Rest Framework JWT configs
 JWT_AUTH = {
     'JWT_ENCODE_HANDLER':
     'rest_framework_jwt.utils.jwt_encode_handler',
@@ -180,6 +180,7 @@ JWT_AUTH = {
     'bookmarks.api_utils.jwt_response_payload_handler',
 
     'JWT_ALLOW_REFRESH': False,
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=30000),
     'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
 
     'JWT_AUTH_HEADER_PREFIX': 'JWT',
@@ -187,12 +188,14 @@ JWT_AUTH = {
 
 }
 
-#CORS politics allowing all hosts
+# CORS politics allowing all hosts
 CORS_ALLOW_ALL_ORIGINS = True
 
 # CORS_ALLOWED_ORIGINS = [
 #     "http://localhost:8080",
 #     "http://localhost:8081",
 #     "http://127.0.0.1:8080",
-#     "http://127.0.0.1:8081",
+#     "http://127.0.0.1:8080",
 # ]
+
+

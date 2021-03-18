@@ -6,11 +6,14 @@ import Login from '../views/Login.vue'
 import Logout from '../views/Logout.vue'
 import ChangePassword from '../views/ChangePassword'
 import ImageList from '../views/ImageList'
+import ImageDetail from '../views/ImageDetail'
+import ImageRanking from '../views/ImageRanking'
+import ImageCreate from '../views/ImageCreate'
 
 
 Vue.use(VueRouter)
 
-const PUBLIC_PATH_NAMES = ['login', 'register', 'logout', 'change-password']
+const PUBLIC_PATH_NAMES = ['login', 'register', 'logout',]
 
 const routes = [
   {
@@ -39,9 +42,24 @@ const routes = [
     component: ChangePassword
   },
   {
-    path: '/images',
+    path: '/image-list',
     name: 'image-list',
     component: ImageList
+  },
+  {
+    path: '/image-ranking',
+    name: 'image-ranking',
+    component: ImageRanking
+  },
+  {
+    path: '/image-detail',
+    name: 'image-detail',
+    component: ImageDetail
+  },
+  {
+    path: '/image-create',
+    name: 'image-create',
+    component: ImageCreate
   },
 ]
 

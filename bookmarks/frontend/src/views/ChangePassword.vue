@@ -9,23 +9,23 @@
         {{ alert }}
 	    </v-alert>
 	    <form @submit.prevent="changePassword">
-	        <v-text-field
-	          type="password"
-	          label="Old password"
-	          :rules="rules"
-	          hide-details="auto"
-	          v-model="user.old_password"
-	          required
-	        ></v-text-field>
-	        <v-text-field
-	          type="password"
-	          label="New password"
-	          :rules="rules"
-	          hide-details="auto"
-	          v-model="user.new_password"
-	          required
-	        ></v-text-field>
-	        <v-btn class="btn" type="submit" depressed color="primary">Change password</v-btn>
+        <v-text-field
+          type="password"
+          label="Old password"
+          :rules="rules"
+          hide-details="auto"
+          v-model="user.old_password"
+          required
+        ></v-text-field>
+        <v-text-field
+          type="password"
+          label="New password"
+          :rules="rules"
+          hide-details="auto"
+          v-model="user.new_password"
+          required
+        ></v-text-field>
+        <v-btn class="btn" type="submit" depressed color="primary">Change password</v-btn>
 	    </form>
 	</div>
 </template>
@@ -38,7 +38,6 @@ export default {
 			user: {
 				'old_password': '',
 				'new_password': '',
-        'token': localStorage.getItem('token') || null,
 			},
 			message: '',
 			alert: this.$store.state.alertMessage,
@@ -49,18 +48,20 @@ export default {
 	},
 	methods: {
 		async changePassword(){
+      let token = localStorage.getItem('token');
+      console.log(token)
 			let requestOptions = {
 				method: "PUT",
 				headers: {
-					'Content-Type': 'application/json',
-          'dataType': 'json',
-          contentType: 'json',
+          'Content-Type': 'application/json',
+          "Authorization": "JWT " + token,
 				},
 				body: JSON.stringify(this.user)
 			}
 
 			let response = await fetch('http://127.0.0.1:8000/api/change-password/', requestOptions);
 			console.log(response);
+      console.log(response.headers)
       if (await response.status === 200) {
         this.$store.state.alertMessage = "You have change your password successfully!";
 				let logInBtn 		= document.querySelector('#login'),
@@ -76,7 +77,7 @@ export default {
 				this.user.new_password = '';
 			}
 		}
-	}
+	},
 }
 </script>
 
