@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 
 import os
 import datetime
+from decouple import config
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from corsheaders.defaults import default_headers
@@ -35,18 +36,21 @@ ALLOWED_HOSTS = ['127.0.0.1', 'c987f400d36d.ngrok.io', 'localhost']
 # Application definition
 
 INSTALLED_APPS = [
-    'sorl.thumbnail',
-    'account.apps.AccountConfig',
-    'images.apps.ImagesConfig',
-    'actions.apps.ActionsConfig',
-    'rest_framework',
-    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'sorl.thumbnail',
+    'rest_framework',
+    'corsheaders',
+    'django_celery_results',
+
+    'account.apps.AccountConfig',
+    'images.apps.ImagesConfig',
+    'actions.apps.ActionsConfig',
 ]
 
 MIDDLEWARE = [
@@ -91,6 +95,17 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': config('DB_NAME'),
+#         'USER': config('DB_USER'),
+#         'PASSWORD': config('DB_PASSWORD'),
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
+
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
 
@@ -128,11 +143,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 
 # Класс для отправки электронной почты
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
@@ -194,4 +211,15 @@ CORS_ALLOW_ALL_ORIGINS = True
 #     "http://127.0.0.1:8080",
 # ]
 
+# Celery Configuration Options
+# CELERY_TIMEZONE = "Europe/Riga"
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'django-db'
+
+# SENDGRID
+EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+SENDGRID_API_KEY = config('SENDGRID_API_KEY')
+SENDGRID_SANDBOX_MODE_IN_DEBUG = False
 

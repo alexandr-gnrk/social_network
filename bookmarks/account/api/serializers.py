@@ -50,6 +50,12 @@ class ChangePasswordSerializer(serializers.Serializer):
 		model = User
 
 
+class ContactsSerializer(serializers.Serializer):
+	""" Serializer for sending mail to all users
+	"""
+	subject = serializers.CharField(required=True)
+	text = serializers.CharField(required=True)
+
 
 
 

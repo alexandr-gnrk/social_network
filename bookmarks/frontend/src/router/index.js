@@ -9,6 +9,7 @@ import ImageList from '../views/ImageList'
 import ImageDetail from '../views/ImageDetail'
 import ImageRanking from '../views/ImageRanking'
 import ImageCreate from '../views/ImageCreate'
+import Notifications from '../views/Notifications'
 
 
 Vue.use(VueRouter)
@@ -60,6 +61,11 @@ const routes = [
     path: '/image-create',
     name: 'image-create',
     component: ImageCreate
+  },
+  {
+    path: '/send',
+    name: 'notifications',
+    component: Notifications
   },
 ]
 

@@ -1,3 +1,7 @@
+import os
+
+from decouple import config
+from django.core.mail import send_mass_mail
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import Q
@@ -11,7 +15,7 @@ from django.contrib.auth import authenticate
 import json
 
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
 from common.decorators import ajax_required
@@ -24,10 +28,12 @@ from actions.models import Action
 
 #API
 from rest_framework import generics, permissions, status
-from .api.serializers import RegisterSerializer, ChangePasswordSerializer
+from .api.serializers import RegisterSerializer, ChangePasswordSerializer, ContactsSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_jwt.settings import api_settings
+
+from .tasks import send_mail_task
 
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
@@ -114,6 +120,7 @@ def user_follow(request):
             return JsonResponse({'status': 'ok'})
     return JsonResponse({'status': 'ok'})
 
+
 #API
 class RegisterAPIView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -174,3 +181,23 @@ class ChangePasswordView(generics.UpdateAPIView):
             }
             return Response(response)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ContactsView(APIView):
+    """ View for sending mail to all users
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        email_list = list(User.objects.all().values_list('email', flat=True))
+
+        serializer = ContactsSerializer(data=request.data)
+        if serializer.is_valid():
+            subject = serializer.validated_data["subject"]
+            text = serializer.validated_data["text"]
+            # sender = 'vitaliii.smpt@gmail.com'
+            sender = config('EMAIL_HOST_USER')
+            message = (subject, text, sender, email_list)
+            send_mail_task.delay((message,), fail_silently=False)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
