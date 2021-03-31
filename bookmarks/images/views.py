@@ -1,7 +1,10 @@
+from django.contrib.auth.models import Permission
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.urls import reverse
+from django.views.generic import TemplateView
 from rest_framework import status
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.permissions import IsAuthenticated
@@ -19,6 +22,7 @@ from actions.utils import create_action
 
 import redis
 from django.conf import settings
+import stripe
 
 from .serializers import ImageSerializer, ImageDetailSerializer, ImageCreateSerializer, ImageRankingSerializer
 
@@ -27,16 +31,13 @@ r = redis.StrictRedis(host=settings.REDIS_HOST,
                       db=settings.REDIS_DB)
 
 
+stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
+
+
 @login_required
 def image_create(request):
     if request.method == 'POST':
-        # Форма отправлена.
         form = ImageCreateForm(data=request.POST)
-        # print('Form', form)
-        # print()
-        # print('Form.is_valid', form.is_valid())
-        # print('Form.cleaned_url', form.clean_url())
-
         if form.is_valid():
             # Данные формы валидны.
             cd = form.cleaned_data
@@ -169,6 +170,4 @@ class ImageCreateView(APIView):
             serializer.save()
             # create_action(request.user, 'bookmarked image', serializer)
         return Response(serializer.data)
-
-
 

@@ -172,3 +172,4 @@ pnpm-debug.log*
 /bookmarks/frontend/.editorconfig
 /.idea/
 
+/bookmarks/static/

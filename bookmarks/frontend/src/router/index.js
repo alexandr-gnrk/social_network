@@ -10,6 +10,7 @@ import ImageDetail from '../views/ImageDetail'
 import ImageRanking from '../views/ImageRanking'
 import ImageCreate from '../views/ImageCreate'
 import Notifications from '../views/Notifications'
+import Sub from '../views/Sub'
 
 
 Vue.use(VueRouter)
@@ -67,6 +68,11 @@ const routes = [
     name: 'notifications',
     component: Notifications
   },
+  {
+    path: '/sub',
+    name: 'sub',
+    component: Sub
+  },  
 ]
 
 const router = new VueRouter({

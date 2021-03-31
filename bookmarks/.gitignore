@@ -169,6 +169,5 @@ pnpm-debug.log*
 *.sw?
 
 
-/bookmarks/frontend/.editorconfig
 /.idea/
 
