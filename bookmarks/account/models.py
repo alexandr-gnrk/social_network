@@ -31,4 +31,5 @@ User.add_to_class('following', models.ManyToManyField('self',
                                                       symmetrical=False))
 
 User.add_to_class('stripe_id', models.CharField(max_length=200, blank=True, null=True))
+User.add_to_class('stripe_subscription_status', models.CharField(max_length=30, blank=True, null=True))
 

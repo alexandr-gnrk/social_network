@@ -1,17 +1,13 @@
-from django.contrib.auth.models import Permission
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.urls import reverse
-from django.views.generic import TemplateView
-from rest_framework import status
-from rest_framework.mixins import CreateModelMixin
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet, GenericViewSet
+from rest_framework.viewsets import ModelViewSet
 
+from sub.permissions import allowed_users, IsAuthenticatedAndSubscriber
 from .forms import ImageCreateForm
 from .models import Image
 from django.http import JsonResponse, HttpResponse
@@ -35,6 +31,7 @@ stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
 
 
 @login_required
+@allowed_users(allowed_roles=['subscribers'])
 def image_create(request):
     if request.method == 'POST':
         form = ImageCreateForm(data=request.POST)
@@ -122,10 +119,7 @@ def image_ranking(request):
     # Получаем отсортированный список самых популярных картинок.
     most_viewed = list(Image.objects.filter(id__in=image_ranking_ids))
     most_viewed.sort(key=lambda x: image_ranking_ids.index(x.id))
-    return render(request,
-                  'images/image/ranking.html',
-                  {'section': 'images',
-                   'most_viewed': most_viewed})
+    return render(request, 'images/image/ranking.html', {'section': 'images', 'most_viewed': most_viewed})
 
 
 # API
@@ -134,7 +128,7 @@ class ImageViewSet(ModelViewSet):
     serializer_class = ImageSerializer
     ordering = ['-created']
     ordering_fields = ['user', 'title', 'created', 'users_like', 'total_likes']
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def retrieve(self, request, *args, **kwargs):
         image = self.get_object()
@@ -162,7 +156,8 @@ class ImageRankingView(APIView):
 
 
 class ImageCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedAndSubscriber]
 
     def post(self, request):
         serializer = ImageCreateSerializer(data=request.data, context={'request': request})

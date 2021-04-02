@@ -17,5 +17,5 @@ class ProfileAdmin(admin.ModelAdmin):
     get_photo.short_description = 'Photo'
 
 
-UserAdmin.list_display += ('is_superuser', 'stripe_id')
+UserAdmin.list_display += ('is_superuser', 'stripe_id', 'stripe_subscription_status')
 # UserAdmin.list_filter += ('paid_until',)

@@ -1,8 +1,6 @@
-import json
-
 import stripe
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.core.mail import send_mail
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import redirect
@@ -16,60 +14,8 @@ stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
 endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
 
 
-class Sub(View):
-    """ Подписка на своем сайте
-        Работет для страйпового кастомера с добавленой картой. Не работет для юзера
-    """
-    def post(self, request, *args, **kwargs):
-        try:
-            # token = request.POST.get('stripeToken')
-            customer = stripe.Customer.create(
-                email=request.user.email,
-                name=request.user.username,
-                source="tok_visa",
-                # default_payment_method=
-                # source=token
-                # payment_method=,
-                # payment_method_types=['card']
-                # source=request.POST['stripeToken']
-            )
-            subscription = stripe.Subscription.create(
-                # customer='cus_JBK9ZWUTmfRBEp',
-                customer=customer['id'],
-                items=[
-                    {
-                        'price': 'price_1IYxwmIBBCpvms2A4iYflBa2',
-                        'quantity': 1,
-                    },
-                ],
-            )
-            # print('++++++++++++', subscription)
-
-            return JsonResponse({
-                'id': subscription.id
-            })
-
-        except Exception as e:
-            JsonResponse({'error': str(e)})
-
-
-class Index(TemplateView):
-    template_name = 'sub/sub.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'STRIPE_TEST_PUBLISHABLE_KEY': settings.STRIPE_TEST_PUBLISHABLE_KEY
-        })
-        return context
-
-
-# =====================================================
-# Subscription and Billing portal with Stripe Session
-# =====================================================
-
-class SubSession(View):
-    """ Subscribe Session
+class CheckoutSession(View):
+    """ Subscription to Basic plan
     """
     def post(self, request, *args, **kwargs):
         user = request.user
@@ -77,11 +23,11 @@ class SubSession(View):
 
         checkout_session = stripe.checkout.Session.create(
             success_url=YOUR_DOMAIN + '/success/',
-            cancel_url=YOUR_DOMAIN + '/cancel/',
+            cancel_url=YOUR_DOMAIN + '/canceled/',
             payment_method_types=['card'],
             line_items=[
                 {
-                    'price': 'price_1IYdWTIBBCpvms2AD3uN9D9f',
+                    'price': settings.STRIPE_PLAN_BASIC_ID,
                     'quantity': 1,
                 },
             ],
@@ -97,54 +43,30 @@ class SubSession(View):
         })
 
 
-class Success(TemplateView):
+class CheckoutSessionSuccess(TemplateView):
     template_name = 'sub/success.html'
 
 
-class Cancel(TemplateView):
-    template_name = 'sub/cancel.html'
+class CheckoutSessionCanceled(TemplateView):
+    template_name = 'sub/canceled.html'
 
 
-class Session(TemplateView):
-    template_name = 'sub/session.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'STRIPE_TEST_PUBLISHABLE_KEY': settings.STRIPE_TEST_PUBLISHABLE_KEY
-        })
-        return context
-
-
-class Portal(View):
-    """ Billing portal
+class CustomerPortal(View):
+    """ Manage billing
     """
     def post(self, request, *args, **kwargs):
         user = request.user
         customer = user.stripe_id
-
-        # if not customer:
-        #     customer = stripe.Customer.create(
-        #         email=request.user.email,
-        #         name=request.user.username,
-        #     )
-        #     customer = customer['id']
-        #     user.stripe_id = customer
-        #     user.save()
 
         # Authenticate your user.
         session = stripe.billing_portal.Session.create(
             customer=customer,
             return_url='http://127.0.0.1:8000',
         )
-        # print(session)
         return redirect(session.url)
 
 
-# ==================================================================
-# Web hooks
-# ==================================================================
-
+# WEBHOOKS
 @csrf_exempt
 def web_hooks(request):
     payload = request.body
@@ -169,22 +91,21 @@ def web_hooks(request):
         # Fulfill the purchase
         fulfill_subscription(session)
 
-    # Subscription updated, deleted (pause: "pause_collection":{})
-    elif event['type'] == 'customer.subscription.deleted' or 'customer.subscription.updated':
-        session = event['data']['object']  # contains a stripe.PaymentIntent
+    # Subscription updated
+    elif event['type'] == 'customer.subscription.updated':
+        session = event['data']['object']
         # Fulfill the purchase
         fulfill_subscription_update(session)
 
-    # Subscription pause
-    # customer.subscription.updated
+    # Subscription deleted
+    elif event['type'] == 'customer.subscription.deleted':
+        session = event['data']['object']
+        # Fulfill the purchase
+        fulfill_subscription_update(session)
 
-    # elif event['type'] == 'payment_intent.succeeded':
-    #     # 4242424242424242	Successful payment
-    #
-    # elif event['type'] == 'payment_intent.payment_failed':
-    #     # 4000000000000002	Charge is declined with a card_declined code.
-    #     # 4000000000000069	Charge is declined with an expired_card code.
-    #
+    # If subscription collection_method=charge_automatically it becomes past_due
+    # when payment to renew it fails and canceled or unpaid (depending on your subscriptions settings)
+    # when Stripe has exhausted all payment retry attempts.
 
     # Passed signature verification
     return HttpResponse(status=200)
@@ -193,21 +114,21 @@ def web_hooks(request):
 def fulfill_subscription(session):
     """ Subscription created
     """
-    # print('Subscription created :::::::::', session)
+    print('Subscription created :::::::::', session)
 
     username = session['metadata']['username']
     customer = session['customer']
     customer_email = session['customer_details']['email']
 
-    # user, created = User.objects.update_or_create(username=username, defaults={
-    #     'stripe_id': customer_id,
-    #     'is_staff': True,
-    #     # 'stripe_sub': subscription_id,
-    # })
-    # User.objects.filter(username=username).update(stripe_id=customer, is_staff=True)
+    # Add stripe_id to user
     User.objects.filter(username=username).update(stripe_id=customer)
 
+    # Add user to a group
     user = User.objects.get(username=username)
+    group = Group.objects.get(name='subscribers')
+    user.groups.add(group)
+
+    # Add user billing info to Subscription model
     sub, created = Subscription.objects.update_or_create(user=user, defaults={
         'customer': customer,
         'customer_email': customer_email,
@@ -228,10 +149,17 @@ def fulfill_subscription(session):
 def fulfill_subscription_update(session):
     """ Subscription updated, deleted
     """
-    print('Subscription deleted :::::::', session)
+    print('Subscription updated :::::::', session)
+
     customer = session['customer']
     user = User.objects.get(stripe_id=customer)
 
+    # Remove user from a group
+    if session['status'] == 'canceled' or 'unpaid':
+        group = Group.objects.get(name='subscribers')
+        user.groups.remove(group)
+
+    # Update user billing info in Subscription model
     sub, created = Subscription.objects.update_or_create(user=user, defaults={
         'customer': customer,
         'subscription': session['id'],
@@ -239,58 +167,10 @@ def fulfill_subscription_update(session):
         'subscription_status': session['status'],
     })
 
-
-# ==================================================================
-# Create Payment Intent
-# ==================================================================
-#
-# class CreatePaymentIntentView(View):
-#     def post(self, request, *args, **kwargs):
-#         user = request.user
-#         customer = stripe.Customer.create(email=user.email)
-#
-#         try:
-#             product_id = self.kwargs['pk']
-#             product = Product.objects.get(id=product_id)
-#             intent = stripe.PaymentIntent.create(
-#                 customer=customer['id'],
-#                 setup_future_usage='off_session',
-#                 amount=product.price,
-#                 currency='usd',
-#                 metadata={
-#                     'product_id': product.id,
-#                     'user': user,
-#                     'user_username': user.username,
-#                     'user_email': user.email,
-#                     'user_paid_until': user.paid_until,
-#                     'user_has_paid': user.has_paid,
-#                 },
-#             )
-#             return JsonResponse({
-#                 'clientSecret': intent['client_secret']
-#             })
-#         except Exception as e:
-#             JsonResponse({'error': str(e)})
-#
-#
-# class CheckoutIntentView(TemplateView):
-#     template_name = 'payments/checkout_intent.html'
-#
-#     def get_context_data(self, **kwargs):
-#         product = Product.objects.get(name='Basic')
-#         context = super(CheckoutIntentView, self).get_context_data(**kwargs)
-#         context.update({
-#             'product': product,
-#             'STRIPE_TEST_PUBLISHABLE_KEY': settings.STRIPE_TEST_PUBLISHABLE_KEY
-#         })
-#         return context
-
-
-# # Get the permission
-# permission = Permission.objects.get(codename='special_status')
-#
-# # Get user
-# u = request.user
-#
-# # Add to user's permission set
-# u.user_permissions.add(permission)
+    send_mail(
+        subject='Customer’s payment succeeded',
+        # message=f'Thanks for you donation. Here is your product {product.url}',
+        message=f'Your subscription has been update or cancelled...',
+        recipient_list=[user.email],
+        from_email=settings.EMAIL_HOST_USER
+    )
