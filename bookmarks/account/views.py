@@ -195,7 +195,6 @@ class ContactsView(APIView):
         if serializer.is_valid():
             subject = serializer.validated_data["subject"]
             text = serializer.validated_data["text"]
-            # sender = 'vitaliii.smpt@gmail.com'
             sender = config('EMAIL_HOST_USER')
             message = (subject, text, sender, email_list)
             send_mail_task.delay((message,), fail_silently=False)

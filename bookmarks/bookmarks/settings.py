@@ -69,15 +69,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'bookmarks.wsgi.application'
 
 
-# Database
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -140,12 +131,12 @@ ABSOLUTE_URL_OVERRIDES = {
     'auth.user': lambda u: reverse_lazy('user_detail', args=[u.username])
 }
 
-# redis info
+
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
 REDIS_DB = 0
 
-# Django Rest Framework configs
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.BasicAuthentication',
@@ -180,10 +171,8 @@ JWT_AUTH = {
 
     'JWT_AUTH_HEADER_PREFIX': 'JWT',
     'JWT_AUTH_COOKIE': None,
-
 }
 
-# CORS politics allowing all hosts
 CORS_ALLOW_ALL_ORIGINS = True
 
 # CORS_ALLOWED_ORIGINS = [
@@ -193,23 +182,25 @@ CORS_ALLOW_ALL_ORIGINS = True
 #     "http://127.0.0.1:8080",
 # ]
 
-# Celery Configuration Options
+
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = 'django-db'
-
 CELERY_TASK_SERIALIZER = 'json'
 
-# SENDGRID
+
+# SendGrid
 EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
 SENDGRID_API_KEY = config('SENDGRID_API_KEY')
 SENDGRID_SANDBOX_MODE_IN_DEBUG = False
 
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 
+
 STRIPE_TEST_PUBLISHABLE_KEY = config('STRIPE_TEST_PUBLISHABLE_KEY')
 STRIPE_TEST_SECRET_KEY = config('STRIPE_TEST_SECRET_KEY')
 STRIPE_WEBHOOK_SECRET = config('STRIPE_WEBHOOK_SECRET')
 STRIPE_PLAN_BASIC_ID = config('STRIPE_PLAN_BASIC_ID')
 STRIPE_PLAN_PREMIUM_ID = config('STRIPE_PLAN_PREMIUM_ID')
+STRIPE_SITE_URL = 'http://127.0.0.1:8000'

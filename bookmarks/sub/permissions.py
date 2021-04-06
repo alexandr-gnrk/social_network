@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from django.shortcuts import redirect
-from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.permissions import BasePermission
 
 
 def allowed_users(allowed_roles=[]):
@@ -10,7 +10,8 @@ def allowed_users(allowed_roles=[]):
         def wrapped_view(request, *args, **kwargs):
             group = None
             if request.user.groups.exists():
-                group = request.user.groups.all()[0].name
+                group = request.user.groups.first().name
+
             if group in allowed_roles:
                 return view_func(request, *args, **kwargs)
             else:
@@ -25,8 +26,7 @@ class IsAuthenticatedAndSubscriber(BasePermission):
     """
     def has_permission(self, request, view):
         return bool(
-            # request.method in SAFE_METHODS or
             request.user and
             request.user.is_authenticated and
-            request.user.groups.filter(name='subscribers').count()
+            request.user.groups.filter(name='subscribers').exists()
         )
