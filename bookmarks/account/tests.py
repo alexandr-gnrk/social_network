@@ -2,8 +2,13 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from account.models import Profile, Contact
 from django.contrib.auth.models import User
+from http_status_code.standard import successful_request
+from http_status_code import StatusCode
 
 from parameterized import parameterized
+import requests
+
+successful_post_request = StatusCode(201, 'You have been registered')
 
 
 class AccountTestCase(TestCase):
@@ -73,3 +78,26 @@ class AccountTestCase(TestCase):
         self.assertEquals(user.first_name, args['first_name'])
         self.assertEquals(user.last_name, args['last_name'])
         self.assertEquals(user.email, args['email'])
+
+    # API tests
+
+    def test_register_api(self):
+        ENDPOINT = 'http://localhost:8000/api/register/'
+        data = {
+            'username'  : 'api_user16',
+            'email'     : 'api_user16@api.com',
+            'password'  : 'Uytrewq1234',
+            'password2' : 'Uytrewq1234'
+        }
+        res = requests.post(ENDPOINT, data=data)
+        self.assertEquals(res.status_code, successful_post_request.code)
+        self.assertEquals('{"username":"api_user16","email":"api_user16@api.com"}', res.text)
+
+    def test_auth_api(self):
+        ENDPOINT = 'http://localhost:8000/api/auth/'
+        data = {
+            'username'  : 'api_user13',
+            'password'  : 'Uytrewq1234'
+        }
+        res = requests.post(ENDPOINT, data=data)
+        self.assertEquals(res.status_code, successful_request.code)

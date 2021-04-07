@@ -2,6 +2,12 @@ from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
+
+from sub.permissions import allowed_users, IsAuthenticatedAndSubscriber
 from .forms import ImageCreateForm
 from .models import Image
 from django.http import JsonResponse, HttpResponse
@@ -12,22 +18,23 @@ from actions.utils import create_action
 
 import redis
 from django.conf import settings
+import stripe
+
+from .serializers import ImageSerializer, ImageDetailSerializer, ImageCreateSerializer, ImageRankingSerializer
 
 r = redis.StrictRedis(host=settings.REDIS_HOST,
                       port=settings.REDIS_PORT,
                       db=settings.REDIS_DB)
 
 
+stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
+
+
 @login_required
+@allowed_users(allowed_roles=['subscribers'])
 def image_create(request):
     if request.method == 'POST':
-        # Форма отправлена.
         form = ImageCreateForm(data=request.POST)
-        # print('Form', form)
-        # print()
-        # print('Form.is_valid', form.is_valid())
-        # print('Form.cleaned_url', form.clean_url())
-
         if form.is_valid():
             # Данные формы валидны.
             cd = form.cleaned_data
@@ -112,7 +119,50 @@ def image_ranking(request):
     # Получаем отсортированный список самых популярных картинок.
     most_viewed = list(Image.objects.filter(id__in=image_ranking_ids))
     most_viewed.sort(key=lambda x: image_ranking_ids.index(x.id))
-    return render(request,
-                  'images/image/ranking.html',
-                  {'section': 'images',
-                   'most_viewed': most_viewed})
+    return render(request, 'images/image/ranking.html', {'section': 'images', 'most_viewed': most_viewed})
+
+
+# API
+class ImageViewSet(ModelViewSet):
+    queryset = Image.objects.all()
+    serializer_class = ImageSerializer
+    ordering = ['-created']
+    ordering_fields = ['user', 'title', 'created', 'users_like', 'total_likes']
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def retrieve(self, request, *args, **kwargs):
+        image = self.get_object()
+        # Увеличиваем количество просмотров картинки на 1.
+        total_views = r.incr('image:{}:views'.format(image.id))
+        # Увеличиваем рейтинг картинки на 1.
+        r.zincrby('image_ranking', image.id, 1)
+        serializer = ImageDetailSerializer(image, context={'total_views': total_views})
+        return Response(serializer.data)
+
+
+class ImageRankingView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Получаем набор рейтинга картинок.
+        image_ranking = r.zrange('image_ranking', 0, -1, desc=True)[:10]
+        image_ranking_ids = [int(id) for id in image_ranking]
+        # Получаем отсортированный список самых популярных картинок.
+        most_viewed = list(Image.objects.filter(id__in=image_ranking_ids))
+        most_viewed.sort(key=lambda x: image_ranking_ids.index(x.id))
+
+        serializer = ImageRankingSerializer(most_viewed, many=True)
+        return Response(serializer.data)
+
+
+class ImageCreateView(APIView):
+    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedAndSubscriber]
+
+    def post(self, request):
+        serializer = ImageCreateSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            # create_action(request.user, 'bookmarked image', serializer)
+        return Response(serializer.data)
+

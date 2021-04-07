@@ -1,9 +1,22 @@
+import os
+
+from decouple import config
+from django.core.mail import send_mass_mail
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.decorators.http import require_POST
+from django.contrib.auth import authenticate
+import json
+
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
 from common.decorators import ajax_required
 from .forms import UserRegistrationForm, UserEditForm, ProfileEditForm
@@ -12,6 +25,19 @@ from .models import Profile, Contact
 from django.contrib import messages
 from actions.utils import create_action
 from actions.models import Action
+
+#API
+from rest_framework import generics, permissions, status
+from .api.serializers import RegisterSerializer, ChangePasswordSerializer, ContactsSerializer
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework_jwt.settings import api_settings
+
+from .tasks import send_mail_task
+
+jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+jwt_response_payload_handler = api_settings.JWT_RESPONSE_PAYLOAD_HANDLER
 
 
 @login_required
@@ -45,7 +71,6 @@ def register(request):
         user_form = UserRegistrationForm()
     return render(request, 'account/register.html', {'user_form': user_form})
 
-
 @login_required
 def edit(request):
     if request.method == 'POST':
@@ -63,7 +88,6 @@ def edit(request):
         user_form = UserEditForm(instance=request.user)
         profile_form = ProfileEditForm(instance=request.user.profile)
     return render(request, 'account/edit.html', {'user_form': user_form, 'profile_form': profile_form})
-
 
 @login_required
 def user_list(request):
@@ -95,3 +119,84 @@ def user_follow(request):
         except User.DoesNotExist:
             return JsonResponse({'status': 'ok'})
     return JsonResponse({'status': 'ok'})
+
+
+#API
+class RegisterAPIView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    permission_classes = [permissions.AllowAny,]
+    serializer_class = RegisterSerializer
+
+
+class AuthAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        user = User.objects.filter(Q(username__iexact=data['username']) | Q(email__iexact=data['username']))
+        if user.exists():
+            user = user.first()
+            if user.check_password(data['password']):
+                if user.is_active:
+                    payload     = jwt_payload_handler(user)
+                    token       = jwt_encode_handler(payload)
+                    response    = jwt_response_payload_handler(token, user, request)
+                    return Response(response)
+                return Response({'detail': 'Your account has been disabled'}, status=400)
+            return Response({'detail': 'Invalid username or password'}, status=400)
+        return Response({'detail': 'User does not exist'}, status=400)
+
+
+class ChangePasswordView(generics.UpdateAPIView):
+    """ An endpoint for changing password.
+    """
+    serializer_class = ChangePasswordSerializer
+    model = User
+    permission_classes = (IsAuthenticated,)
+    # authentication_classes = {SessionAuthentication, TokenAuthentication, JSONWebTokenAuthentication}
+    # permission_classes = (permissions.AllowAny,)
+
+    # @method_decorator(ensure_csrf_cookie)
+    def get_object(self, queryset=None):
+        obj = self.request.user
+        return obj
+
+    # @method_decorator(ensure_csrf_cookie)
+    def update(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            # Check old password
+            if not self.object.check_password(serializer.data.get("old_password")):
+                return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
+            # set_password also hashes the password that the user will get
+            self.object.set_password(serializer.data.get("new_password"))
+            self.object.save()
+            response = {
+                'status': 'success',
+                'code': status.HTTP_200_OK,
+                'message': 'Password updated successfully',
+                'data': []
+            }
+            return Response(response)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ContactsView(APIView):
+    """ View for sending mail to all users
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        email_list = list(User.objects.all().values_list('email', flat=True))
+
+        serializer = ContactsSerializer(data=request.data)
+        if serializer.is_valid():
+            subject = serializer.validated_data["subject"]
+            text = serializer.validated_data["text"]
+            sender = config('EMAIL_HOST_USER')
+            message = (subject, text, sender, email_list)
+            send_mail_task.delay((message,), fail_silently=False)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)

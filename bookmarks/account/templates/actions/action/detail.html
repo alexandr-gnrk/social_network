@@ -28,7 +28,11 @@
       <span class="date text-secondary">{{ action.created|timesince }} ago</span>
       <br />
       <a href="{{ user.get_absolute_url }}" class="text-success text-decoration-none">
-        {{ user.first_name }}
+        {% if user.first_name %}
+          {{ user.first_name|capfirst }}
+        {% else %} 
+          {{ user.username|capfirst }}
+        {% endif %}
       </a>
       {{ action.verb }}
       {% if action.target %}

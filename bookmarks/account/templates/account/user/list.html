@@ -14,7 +14,13 @@
                 {% endthumbnail %}
             </a>
             <div class="info text-center mt-3">
-                <a class="title text-decoration-none text-success" href="{{ user.get_absolute_url }}">{{ user.get_full_name }}</a>
+                <a class="title text-decoration-none text-success" href="{{ user.get_absolute_url }}">
+                    {% if user.first_name %}
+                        {{ user.first_name|capfirst }}
+                    {% else %} 
+                        {{ user.username|capfirst }}
+                    {% endif %}
+                </a>
             </div>
         </div>
     {% endfor %}
