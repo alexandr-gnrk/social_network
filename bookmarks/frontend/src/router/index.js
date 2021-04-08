@@ -10,6 +10,7 @@ import ImageDetail from '../views/ImageDetail'
 import ImageRanking from '../views/ImageRanking'
 import ImageCreate from '../views/ImageCreate'
 import Notifications from '../views/Notifications'
+import People from '../views/People'
 
 
 Vue.use(VueRouter)
@@ -67,9 +68,19 @@ const routes = [
     name: 'notifications',
     component: Notifications
   },
+  {
+    path: '/people',
+    name: 'people',
+    component: People
+  },
+  {
+    path: '*',
+    redirect: {name: 'dashboard'}
+  },  
 ]
 
 const router = new VueRouter({
+  mode: 'history',
   routes
 })
 

@@ -1,34 +1,32 @@
 <template>
-	<div id="app">
-		<v-app id="main">
-      <Navbar />>
-		  <v-main>
-			  <router-view></router-view>
-			</v-main>
-
-			<v-footer padless> 
-				<v-col class="text-center" cols="12">
-				  2021 - {{ new Date().getFullYear() }} — <strong>Social network</strong>
-				</v-col>
-			</v-footer>
-  		</v-app>
-	</div>
+  <div id="app">
+    <v-app id="main">
+      <Navbar />
+      <v-main>
+        <v-container fluid my-5>
+          <!-- If using vue-router -->
+          <router-view></router-view>
+        </v-container>
+      </v-main>
+      <Footer />
+    </v-app>
+  </div>
 </template>
 
 <script>
-
-import Navbar from '@/components/Navbar'
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 export default {
-  name: 'App',
-  data(){
+  name: "App",
+  data() {
     return {
-      alert: this.$store.state.alertMessage
-    }
+      alert: this.$store.state.alertMessage,
+    };
   },
   components: {
-    Navbar
+    Navbar, Footer
   },
-}
+};
 </script>
 

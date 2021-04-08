@@ -1,10 +1,11 @@
 <template>
-  <div class="mt-5">
+  <div>
     <div class="row">
       <v-card
         v-for="image in images" :key="image.id"
-        class="mx-auto"
+        class="mt-5 mx-auto"
         max-width="400"
+        
       >
         <v-img
           class="white--text align-end"

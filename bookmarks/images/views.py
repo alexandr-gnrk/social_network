@@ -128,7 +128,7 @@ class ImageViewSet(ModelViewSet):
     serializer_class = ImageSerializer
     ordering = ['-created']
     ordering_fields = ['user', 'title', 'created', 'users_like', 'total_likes']
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    # permission_classes = [IsAuthenticatedOrReadOnly]
 
     def retrieve(self, request, *args, **kwargs):
         image = self.get_object()
@@ -156,8 +156,8 @@ class ImageRankingView(APIView):
 
 
 class ImageCreateView(APIView):
-    # permission_classes = [IsAuthenticated]
-    permission_classes = [IsAuthenticatedAndSubscriber]
+    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticatedAndSubscriber]
 
     def post(self, request):
         serializer = ImageCreateSerializer(data=request.data, context={'request': request})
