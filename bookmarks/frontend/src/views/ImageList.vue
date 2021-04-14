@@ -1,55 +1,57 @@
 <template>
   <div>
-    <div class="row">
-      <v-card
+    <v-row>
+      <!-- <v-card
         v-for="image in images" :key="image.id"
-        class="mt-5 mx-auto"
+        class="my-5 mx-auto"
         max-width="400"
-        
       >
         <v-img
           class="white--text align-end"
           height="200px"
-          src="https://cdn.vuetifyjs.com/images/cards/docks.jpg"
+          :src="image.image"
+          :alt="image.title"
         >
         </v-img>
-
         <v-card-subtitle class="pb-0">
           {{ image.title }}
         </v-card-subtitle>
-
-        <v-card-text class="text--primary">
+        <v-card-text class="text--primary" v-if="isExplore">
           <div>{{ image.description }}</div>
         </v-card-text>
-
         <v-card-actions>
-          <v-btn
-            color="orange"
-            text
-          >
-            Share
-          </v-btn>
-
-          <v-btn
-            color="orange"
-            text
-          >
-            Explore
-          </v-btn>
+          <v-btn color="orange" text>Share</v-btn>
+          <v-btn color="orange" text @click="isExplore = !isExplore">Explore</v-btn>
+          <router-link :to="{ name: 'image-detail', params: { id: image.id } }">
+            <v-btn color="orange" text>Detail</v-btn>
+          </router-link>
         </v-card-actions>
-      </v-card>
-    </div>
-  </div>
+      </v-card> -->
 
+      <ImageCard
+        v-for="image in images" :key="image.id"
+        :title="image.title"
+        :description="image.description"
+        :img="image.image"
+        :id="image.id"
+        :is-explore="isExplore"
+        @open-description=""
+       />
+      <!-- <image-card></image-card> -->
+    </v-row>
+  </div>
 </template>
 
 <script>
+import ImageCard from '../components/ImageCard.vue';
 
 export default {
   name: 'ImageList',
   data() {
     return {
-      images: []
+      images: [],
+      isExplore: false,
+
     }
   },
   async created () {
@@ -64,5 +66,9 @@ export default {
     var response = await fetch('http://localhost:8000/images/api/', requestOptions);
     this.images = await response.json();
   },
+  components: {
+    // 'image-card': ImageCard,
+    ImageCard,
+  }
 }
 </script>

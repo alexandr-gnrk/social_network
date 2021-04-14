@@ -6,10 +6,12 @@ from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
 
+from actions.models import Action
 from images.models import Image
 
 
 class ImageSerializer(ModelSerializer):
+    users_like = serializers.SlugRelatedField(slug_field='username', read_only=True, many=True)
 
     class Meta:
         model = Image
@@ -71,3 +73,10 @@ class ImageRankingSerializer(ModelSerializer):
         model = Image
         fields = ('id', 'title', 'image')
 
+
+class ImageLikeSerializer(serializers.Serializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
+    id = serializers.IntegerField(required=True)
+    action = serializers.CharField(required=True)

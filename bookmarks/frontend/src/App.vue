@@ -3,7 +3,7 @@
     <v-app id="main">
       <Navbar />
       <v-main>
-        <v-container fluid my-5>
+        <v-container fluid my-10>
           <!-- If using vue-router -->
           <router-view></router-view>
         </v-container>

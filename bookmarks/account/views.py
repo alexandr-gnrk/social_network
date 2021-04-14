@@ -71,6 +71,7 @@ def register(request):
         user_form = UserRegistrationForm()
     return render(request, 'account/register.html', {'user_form': user_form})
 
+
 @login_required
 def edit(request):
     if request.method == 'POST':
@@ -88,6 +89,7 @@ def edit(request):
         user_form = UserEditForm(instance=request.user)
         profile_form = ProfileEditForm(instance=request.user.profile)
     return render(request, 'account/edit.html', {'user_form': user_form, 'profile_form': profile_form})
+
 
 @login_required
 def user_list(request):
@@ -154,14 +156,11 @@ class ChangePasswordView(generics.UpdateAPIView):
     model = User
     permission_classes = (IsAuthenticated,)
     # authentication_classes = {SessionAuthentication, TokenAuthentication, JSONWebTokenAuthentication}
-    # permission_classes = (permissions.AllowAny,)
 
-    # @method_decorator(ensure_csrf_cookie)
     def get_object(self, queryset=None):
         obj = self.request.user
         return obj
 
-    # @method_decorator(ensure_csrf_cookie)
     def update(self, request, *args, **kwargs):
         self.object = self.get_object()
         serializer = self.get_serializer(data=request.data)

@@ -166,7 +166,7 @@ JWT_AUTH = {
     'bookmarks.api_utils.jwt_response_payload_handler',
 
     'JWT_ALLOW_REFRESH': False,
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=30000),
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=300000),
     'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
 
     'JWT_AUTH_HEADER_PREFIX': 'JWT',

@@ -1,40 +1,38 @@
 <template>
-  <div class="m-5">
-    <v-row class="m-5">
-      <v-card
+  <div>
+    <v-row>
+      <div
+        class="mx-auto mt-5"
         v-for="image in images" :key="image.id"
-        class="mx-auto"
-        max-width="400"
       >
-        <v-img
-          class="white--text align-end"
-          height="200px"
-          src="https://cdn.vuetifyjs.com/images/cards/docks.jpg"
-        >
-        </v-img>
-        <v-card-subtitle class="pb-0">
-          {{ image.title }}
-        </v-card-subtitle>
-        <v-card-text class="text--primary">
-          <div>{{ image.description }}</div>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn color="orange" text>Share</v-btn>
-          <v-btn color="orange" text>Explore</v-btn>
-        </v-card-actions>
-      </v-card>
+        <image-card
+          :title="image.title"
+          :description="image.description"
+          :img="apiUrl + image.image"
+          :id="image.id"
+          @addLike="addLike(image.id)"
+        />
+      </div>
     </v-row>
   </div>
-
 </template>
 
+
 <script>
+import ImageCard from "@/components/ImageCard";
 
 export default {
   name: 'ImageRanking',
+  components: { ImageCard },
   data() {
     return {
-      images: []
+      images: [],
+      apiUrl: 'http://127.0.0.1:8000'
+    }
+  },
+  methods: {
+    addLike(imageId) {
+      console.log(imageId)
     }
   },
   async created () {
@@ -48,6 +46,6 @@ export default {
     }
     var response = await fetch('http://localhost:8000/images/api-ranking/', requestOptions);
     this.images = await response.json();
-  },
+  }
 }
 </script>

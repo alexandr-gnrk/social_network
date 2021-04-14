@@ -7,7 +7,7 @@
       <router-link :to = "{ name:'dashboard' }" class="link"><span>My dashboard</span></router-link>
     </v-btn>
     <v-btn text>
-      <router-link :to = "{ name:'image-list' }" class="link"><span>Images</span></router-link>
+      <router-link :to = "{ name:'images-list' }" class="link"><span>Images</span></router-link>
     </v-btn>
     <v-btn text>
       <router-link :to = "{ name:'image-ranking' }" class="link"><span>Image ranking</span></router-link>
@@ -25,7 +25,7 @@
     <v-spacer></v-spacer>
 
     <div v-if="user">
-      <v-p style="color:yellow">Hello, {{ user }}</v-p>
+      <span style="color:yellow">Hello, {{ user }}</span>
       <router-link :to = "{ name:'logout' }" class="link ml-5"><span>Logout</span></router-link>
     </div>
     <div v-else>

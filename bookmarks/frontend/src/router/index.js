@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+
 import Dashboard from '../views/Dashboard.vue'
 import Register from '../views/Register.vue'
 import Login from '../views/Login.vue'
@@ -44,19 +45,20 @@ const routes = [
     component: ChangePassword
   },
   {
-    path: '/image-list',
-    name: 'image-list',
-    component: ImageList
+    path: '/images-list',
+    name: 'images-list',
+    component: ImageList,
+  },
+  {
+    path: '/images-list/:id',
+    name: 'image-detail',
+    component: ImageDetail,
+    // props: true
   },
   {
     path: '/image-ranking',
     name: 'image-ranking',
     component: ImageRanking
-  },
-  {
-    path: '/image-detail',
-    name: 'image-detail',
-    component: ImageDetail
   },
   {
     path: '/image-create',
