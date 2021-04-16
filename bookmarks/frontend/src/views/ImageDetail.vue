@@ -16,7 +16,6 @@
       <v-card-text class="text--primary">
         <div>{{ image.description }}</div>
       </v-card-text>
-
       <v-card-text class="text--primary">
         Users like: 
         <span v-for="user in image.users_like" :key="user">{{ user }} </span>
@@ -25,13 +24,11 @@
       <v-card-actions p-10>
         <v-spacer></v-spacer>
 
-        <v-btn icon @click="isLike = !isLike">
-          <v-icon :style="{color: isLike ? 'orange' : 'grey'}">mdi-heart</v-icon>
-        </v-btn>
-
-        <v-btn icon @click="likeImage">
-          <v-icon style="color:orange">mdi-heart</v-icon>
-        </v-btn>
+        <LikeImageButton
+          :id="id"
+          :action="action"
+          @like-image="likeImage"
+         />
         <span class="grey--text">
           {{ image.total_likes }}
         </span>
@@ -51,18 +48,24 @@
 
 
 <script>
+import LikeImageButton from '../components/LikeImageButton.vue';
 
 export default {
   name: 'ImageDetail',
   data() {
     return {
-      isLike: false,
-      like: {
-        id: '',
-        action: ''
-      },
+      id: this.$route.params.id,
+      user: localStorage.getItem('user'),
+      apiUrl: 'http://127.0.0.1:8000',
       image: {},
-      apiUrl: 'http://127.0.0.1:8000'
+    }
+  },
+  computed: {
+    action() {
+      if (this.image.users_like.includes(this.user)) {
+        return this.action = 'dislike'
+      }
+      return this.action = 'like'
     }
   },
   created () {
@@ -78,28 +81,16 @@ export default {
           "Authorization": "JWT " + token,
         }
       };
-      var response = await fetch('http://localhost:8000/images/api/' + this.$route.params.id, requestOptions);
+      var response = await fetch('http://localhost:8000/images/api/' + this.id, requestOptions);
       this.image = await response.json();
     },
-    async likeImage () {
-      let token = localStorage.getItem('token');
-      let requestOptions = {
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json',
-          "Authorization": "JWT " + token,
-        },
-        body: JSON.stringify({
-          'id': this.$route.params.id,
-          'action': 'like'
-        }),
-      };
-      var response = await fetch('http://localhost:8000/images/api-like/', requestOptions);
-      this.like = await response.json();
-      console.log(this.like)
-      this.loadImage
+    likeImage() {
+      this.loadImage()
     },
-  } 
+  },
+  components: {
+    LikeImageButton
+  }
 }
 </script>
 

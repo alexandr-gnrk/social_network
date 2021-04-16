@@ -30,12 +30,12 @@
 
       <ImageCard
         v-for="image in images" :key="image.id"
+        :id="image.id"
         :title="image.title"
         :description="image.description"
         :img="image.image"
-        :id="image.id"
-        :is-explore="isExplore"
-        @open-description=""
+        :isExplore="isExplore"
+        @open-description="openDescription"
        />
       <!-- <image-card></image-card> -->
     </v-row>
@@ -51,20 +51,27 @@ export default {
     return {
       images: [],
       isExplore: false,
-
     }
   },
-  async created () {
-    let token = localStorage.getItem('token');
-    let requestOptions = {
-      method: "GET",
-      headers: {
-        'Content-Type': 'application/json',
-        "Authorization": "JWT " + token,
-      },
-    }
-    var response = await fetch('http://localhost:8000/images/api/', requestOptions);
-    this.images = await response.json();
+  methods: {
+    async loadImages () {
+      let token = localStorage.getItem('token');
+      let requestOptions = {
+        method: "GET",
+        headers: {
+          'Content-Type': 'application/json',
+          "Authorization": "JWT " + token,
+        },
+      }
+      var response = await fetch('http://localhost:8000/images/api/', requestOptions);
+      this.images = await response.json();
+    },
+    openDescription() {
+      console.log('Hello from component')
+    },
+  },
+  created () {
+    this.loadImages()
   },
   components: {
     // 'image-card': ImageCard,

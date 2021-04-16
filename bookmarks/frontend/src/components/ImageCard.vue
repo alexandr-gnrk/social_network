@@ -18,12 +18,9 @@
         <div>{{ description }}</div>
       </v-card-text>
       <v-card-actions>
-        <v-btn color="orange" text @click="openDescription">
+        <v-btn color="orange" text @click="open">
           {{ isCardExplore ? 'Hide' : 'Explore'}}
         </v-btn>
-        <!-- <router-link :to="{ name: 'image-detail', params: { id: image.id } }">
-          <v-btn color="orange" text>Detail</v-btn>
-        </router-link> -->
         <v-btn color="orange" text @click="$router.push({ name: 'image-detail', params: { id: id } })">Detail</v-btn>
       </v-card-actions>
     </v-card>
@@ -36,6 +33,7 @@
 export default {
   name: 'ImageCard',
   // props: ['title', 'description', 'img', 'id'],
+  // emits: ['open-description'],
   props: {
     title: {
       type: String,
@@ -50,17 +48,22 @@ export default {
       default: false
     }
   },
+  emits: {
+    'open-description': null  // no validation
+  },
   data() {
     return {
-      isCardExplore: this.isExplore // rename isExplore before use it in children
+      isCardExplore: this.isExplore // copy isExplore before use it in children
     }
   },
   methods: {
-    openDescription() {
+    open() {
       this.isCardExplore = !this.isCardExplore
-      this.$emit('open-description') // send event on top to parent
-    }
-  }
+      if (this.isCardExplore) {
+        this.$emit('open-description') // send event on top to parent
+      }
+    },
+  },
 }
 </script>
 
