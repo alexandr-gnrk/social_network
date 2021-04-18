@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
+from account.models import Profile
 from sub.permissions import allowed_users, IsAuthenticatedAndSubscriber
 from .forms import ImageCreateForm
 from .models import Image
@@ -46,7 +47,17 @@ class ImageViewSet(ModelViewSet):
         total_views = r.incr('image:{}:views'.format(image.id))
         # Увеличиваем рейтинг картинки на 1.
         r.zincrby('image_ranking', image.id, 1)
-        serializer = ImageDetailSerializer(image, context={'total_views': total_views})
+
+        users_like = image.users_like.values_list(flat=True)
+        users_like_photo = []
+        for user_id in users_like:
+            user_photo = Profile.objects.get(id=user_id).photo
+            users_like_photo.append(str(user_photo))
+
+        serializer = ImageDetailSerializer(image, context={
+            'total_views': total_views,
+            'users_like_photo': users_like_photo
+        })
         return Response(serializer.data)
 
 

@@ -1,49 +1,64 @@
 <template>
-  <div>
-    <v-row>
-      <!-- <v-card
-        v-for="image in images" :key="image.id"
-        class="my-5 mx-auto"
-        max-width="400"
-      >
-        <v-img
-          class="white--text align-end"
-          height="200px"
-          :src="image.image"
-          :alt="image.title"
-        >
-        </v-img>
-        <v-card-subtitle class="pb-0">
-          {{ image.title }}
-        </v-card-subtitle>
-        <v-card-text class="text--primary" v-if="isExplore">
-          <div>{{ image.description }}</div>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn color="orange" text>Share</v-btn>
-          <v-btn color="orange" text @click="isExplore = !isExplore">Explore</v-btn>
-          <router-link :to="{ name: 'image-detail', params: { id: image.id } }">
-            <v-btn color="orange" text>Detail</v-btn>
-          </router-link>
-        </v-card-actions>
-      </v-card> -->
 
-      <ImageCard
-        v-for="image in images" :key="image.id"
-        :id="image.id"
-        :title="image.title"
-        :description="image.description"
-        :img="image.image"
-        :isExplore="isExplore"
-        @open-description="openDescription"
-       />
-      <!-- <image-card></image-card> -->
-    </v-row>
-  </div>
+  <v-row class="mb-6">
+    <v-col
+      cols="12"
+      sm="6"
+      md="8"
+    >
+      <v-card
+        class="pa-2"
+        tile
+        flat
+      >
+        <AppLoader
+          v-if="loading"
+        />
+
+        <AppAlert
+        :alert="alert"
+        @close="alert = null"
+        />
+
+        <v-row>
+          <ImageCard
+            v-for="image in images" :key="image.id"
+            :id="image.id"
+            :title="image.title"
+            :description="image.description"
+            :img="image.image"
+            :isExplore="isExplore"
+            @open-description="openDescription"
+            @delete="deleteImage"
+          />
+        </v-row>
+      </v-card>
+    </v-col>
+
+    <v-col
+      cols="6"
+      md="4"
+    >
+      <v-card
+        class="pa-2 grey lighten-4 mt-4"
+        outlined
+        flat
+        tile
+      >
+        <ImageCreateForm
+          @create-image="loadImages"
+        />  
+      </v-card>
+    </v-col>      
+  </v-row>
+
 </template>
 
 <script>
 import ImageCard from '../components/ImageCard.vue';
+import ImageCreateForm from '../components/ImageCreateForm.vue';
+import AppAlert from '../components/AppAlert.vue';
+import AppLoader from '../components/AppLoader.vue';
 
 export default {
   name: 'ImageList',
@@ -51,10 +66,13 @@ export default {
     return {
       images: [],
       isExplore: false,
+      alert: null,
+      loading: false
     }
   },
   methods: {
     async loadImages () {
+      this.loading = true // start loading
       let token = localStorage.getItem('token');
       let requestOptions = {
         method: "GET",
@@ -65,17 +83,37 @@ export default {
       }
       var response = await fetch('http://localhost:8000/images/api/', requestOptions);
       this.images = await response.json();
+      this.loading = false // end loading
+    },
+    async deleteImage(id) {
+      try {
+        const title = this.images.find(image => image.id === id).title // alert.title
+        let token = localStorage.getItem('token');
+        let requestOptions = {
+          method: "DELETE",
+          headers: {
+            'Content-Type': 'application/json',
+            "Authorization": "JWT " + token,
+          }
+        };
+        await fetch(`http://localhost:8000/images/api/${id}`, requestOptions);
+        this.images = this.images.filter(image => image.id !== id)
+        this.alert = {
+          type: 'success',
+          text: `Image "${title}" was deleted`,
+        }
+      } catch (e) {}
     },
     openDescription() {
       console.log('Hello from component')
     },
   },
-  created () {
+  mounted () {
     this.loadImages()
   },
   components: {
     // 'image-card': ImageCard,
-    ImageCard,
+    ImageCard, ImageCreateForm, AppAlert, AppLoader
   }
 }
 </script>

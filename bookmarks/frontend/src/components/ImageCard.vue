@@ -1,5 +1,4 @@
 <template>
-
     <v-card
       class="my-5 mx-auto"
       max-width="400"
@@ -22,9 +21,12 @@
           {{ isCardExplore ? 'Hide' : 'Explore'}}
         </v-btn>
         <v-btn color="orange" text @click="$router.push({ name: 'image-detail', params: { id: id } })">Detail</v-btn>
+        <v-spacer></v-spacer>
+        <v-btn color="orange" text @click="$emit('delete', id)">
+          <v-icon :color="color">mdi-trash-can-outline</v-icon>
+        </v-btn>
       </v-card-actions>
     </v-card>
-
 </template>
 
 
@@ -49,7 +51,8 @@ export default {
     }
   },
   emits: {
-    'open-description': null  // no validation
+    'open-description': null,  // no validation
+    'delete': null
   },
   data() {
     return {
