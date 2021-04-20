@@ -20,7 +20,7 @@ class ActionUserSerializer(ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'profile')
+        fields = ('id', 'username', 'profile')
 
 
 class ActionImageSerializer(ModelSerializer):
@@ -53,11 +53,12 @@ class ActionSerializer(ModelSerializer):
 
     class Meta:
         model = Action
-        fields = ('user', 'verb', 'target_ct', 'target_id', 'target', 'created')
+        fields = ('id', 'user', 'verb', 'target_ct', 'target_id', 'target', 'created')
 
 
 class UserSerializer(ModelSerializer):
     profile = ActionProfileSerializer(read_only=True)
+    followers = serializers.SlugRelatedField(slug_field='username', read_only=True, many=True)
 
     class Meta:
         model = User

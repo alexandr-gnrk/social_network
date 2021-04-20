@@ -17,10 +17,7 @@
         <div>{{ image.description }}</div>
       </v-card-text>
       
-      <v-card-text class="text--primary" v-if="image.users_like.length > 0">
-        Users like: <span v-for="user in image.users_like" :key="user">{{ user }} </span>
-      </v-card-text>
-      <v-card-text class="text--primary" v-else>
+      <v-card-text class="text--primary" v-if="image.users_like.length === 0">
         Nobody likes this image yet.
       </v-card-text>
 
@@ -51,17 +48,20 @@
       <v-row class="pa-3">
         <v-card
           class="ml-5"
-          max-width="400"
-          v-for="u in image.users_like_photo"
-          :key="u"
+          max-width="300"
+          v-for="person in image.users_like"
+          :key="person"
+          flat
         >
           <v-img
-            :src="'http://127.0.0.1:8000/media/' + u"
+            :src="'http://127.0.0.1:8000' + person.profile.photo"
             aspect-ratio="1"
             class="grey lighten-2 rounded-circle"
             width="100px"
-          >
-          </v-img>
+          ></v-img>
+          <v-card-subtitle class="pb-0 mx-auto">
+            {{ person.profile.user }}
+          </v-card-subtitle>
         </v-card>
       </v-row>
     </v-card>

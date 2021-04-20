@@ -12,6 +12,7 @@ import ImageRanking from '../views/ImageRanking'
 import ImageCreate from '../views/ImageCreate'
 import Notifications from '../views/Notifications'
 import UserList from '../views/UserList'
+import UserDetail from '../views/UserDetail'
 
 
 Vue.use(VueRouter)
@@ -45,12 +46,12 @@ const routes = [
     component: ChangePassword
   },
   {
-    path: '/images-list',
-    name: 'images-list',
+    path: '/image-list',
+    name: 'image-list',
     component: ImageList,
   },
   {
-    path: '/images-list/:id',
+    path: '/image-list/:id',
     name: 'image-detail',
     component: ImageDetail,
     // props: true
@@ -75,6 +76,11 @@ const routes = [
     name: 'user-list',
     component: UserList
   },
+  {
+    path: '/user-list/:id',
+    name: 'user-detail',
+    component: UserDetail,
+  },  
   {
     path: '*',
     redirect: {name: 'dashboard'}
