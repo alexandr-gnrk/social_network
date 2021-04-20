@@ -13,7 +13,7 @@
       <router-link :to = "{ name:'image-ranking' }" class="link"><span>Image ranking</span></router-link>
     </v-btn>				
     <v-btn text>
-      <router-link :to = "{ name:'people' }" class="link"><span>People</span></router-link>
+      <router-link :to = "{ name:'user-list' }" class="link"><span>People</span></router-link>
     </v-btn>
     <v-btn text>
       <router-link :to = "{ name:'notifications' }" class="link"><span>Send mail</span></router-link>

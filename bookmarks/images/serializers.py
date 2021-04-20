@@ -1,5 +1,6 @@
 from urllib import request
 
+from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.utils.text import slugify
 from rest_framework import serializers
@@ -7,47 +8,42 @@ from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
 
 from account.models import Profile
-from actions.models import Action
 from images.models import Image
 
 
-class ProfileSerializer(ModelSerializer):
+class UserLikeProfileSerializer(ModelSerializer):
+    # user.id -> user.username
+    user = serializers.SlugRelatedField(slug_field='username', read_only=True)
 
     class Meta:
         model = Profile
-        fields = ('user', 'date_of_birth', 'photo')
+        fields = ('user', 'photo')
+
+
+class UserLikeSerializer(ModelSerializer):
+    profile = UserLikeProfileSerializer(read_only=True)
+
+    class Meta:
+        model = User
+        fields = ('username', 'following', 'profile')
 
 
 class ImageSerializer(ModelSerializer):
-    users_like = serializers.SlugRelatedField(slug_field='username', read_only=True, many=True)
-
-    class Meta:
-        model = Image
-        fields = ('id', 'user', 'title', 'slug', 'url', 'image', 'description', 'created', 'total_likes', 'users_like')
-
-
-class ImageDetailSerializer(ModelSerializer):
-    # user.id -> user.username
     user = serializers.SlugRelatedField(slug_field='username', read_only=True)
-    users_like = serializers.SlugRelatedField(slug_field='username', read_only=True, many=True)
+    # users_like = serializers.SlugRelatedField(slug_field='username', read_only=True, many=True)
+    users_like = UserLikeSerializer(many=True, read_only=True)
     # Extra field for context
     total_views = serializers.SerializerMethodField()
-    users_like_photo = serializers.SerializerMethodField()
 
     def get_total_views(self, obj):
         if 'total_views' in self.context:
             return self.context['total_views']
         return None
 
-    def get_users_like_photo(self, obj):
-        if 'users_like_photo' in self.context:
-            return self.context['users_like_photo']
-        return None
-
     class Meta:
         model = Image
         fields = ('id', 'user', 'title', 'slug', 'url', 'image', 'description', 'created', 'total_likes', 'users_like',
-                  'total_views', 'users_like_photo')
+                  'total_views')
 
 
 class ImageCreateSerializer(ModelSerializer):
@@ -64,7 +60,6 @@ class ImageCreateSerializer(ModelSerializer):
         valid_extensions = ['jpg', 'jpeg', 'png']
         extension = url.rsplit('.', 1)[1].lower()
         if not extension in valid_extensions:
-            # raise ValidationError('The given URL does not match valid image extensions.')
             return Response('The given URL does not match valid image extensions.')
         return url
 

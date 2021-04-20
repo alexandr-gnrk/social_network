@@ -11,7 +11,7 @@ import ImageDetail from '../views/ImageDetail'
 import ImageRanking from '../views/ImageRanking'
 import ImageCreate from '../views/ImageCreate'
 import Notifications from '../views/Notifications'
-import People from '../views/People'
+import UserList from '../views/UserList'
 
 
 Vue.use(VueRouter)
@@ -71,9 +71,9 @@ const routes = [
     component: Notifications
   },
   {
-    path: '/people',
-    name: 'people',
-    component: People
+    path: '/user-list',
+    name: 'user-list',
+    component: UserList
   },
   {
     path: '*',

@@ -40,23 +40,5 @@ class RegisterSerializer(serializers.ModelSerializer):
 		return user
 
 
-class ChangePasswordSerializer(serializers.Serializer):
-	""" Serializer for password change endpoint.
-	"""
-	old_password = serializers.CharField(required=True)
-	new_password = serializers.CharField(required=True)
-
-	class Meta:
-		model = User
-
-
-class ContactsSerializer(serializers.Serializer):
-	""" Serializer for sending mail to all users
-	"""
-	subject = serializers.CharField(required=True)
-	text = serializers.CharField(required=True)
-
-
-
 
 

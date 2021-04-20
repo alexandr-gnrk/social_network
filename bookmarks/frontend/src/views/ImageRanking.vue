@@ -44,8 +44,9 @@ export default {
         "Authorization": "JWT " + token,
       },
     }
-    var response = await fetch('http://localhost:8000/images/api-ranking/', requestOptions);
+    var response = await fetch('http://localhost:8000/images/api/ranking/', requestOptions);
     this.images = await response.json();
+    console.log(this.images)
   }
 }
 </script>

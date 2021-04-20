@@ -11,10 +11,6 @@
         tile
         flat
       >
-        <AppLoader
-          v-if="loading"
-        />
-
         <AppAlert
         :alert="alert"
         @close="alert = null"
@@ -58,7 +54,6 @@
 import ImageCard from '../components/ImageCard.vue';
 import ImageCreateForm from '../components/ImageCreateForm.vue';
 import AppAlert from '../components/AppAlert.vue';
-import AppLoader from '../components/AppLoader.vue';
 
 export default {
   name: 'ImageList',
@@ -67,12 +62,10 @@ export default {
       images: [],
       isExplore: false,
       alert: null,
-      loading: false
     }
   },
   methods: {
     async loadImages () {
-      this.loading = true // start loading
       let token = localStorage.getItem('token');
       let requestOptions = {
         method: "GET",
@@ -83,7 +76,6 @@ export default {
       }
       var response = await fetch('http://localhost:8000/images/api/', requestOptions);
       this.images = await response.json();
-      this.loading = false // end loading
     },
     async deleteImage(id) {
       try {
@@ -99,6 +91,7 @@ export default {
         await fetch(`http://localhost:8000/images/api/${id}`, requestOptions);
         this.images = this.images.filter(image => image.id !== id)
         this.alert = {
+          color: 'red',
           type: 'success',
           text: `Image "${title}" was deleted`,
         }
@@ -113,7 +106,7 @@ export default {
   },
   components: {
     // 'image-card': ImageCard,
-    ImageCard, ImageCreateForm, AppAlert, AppLoader
+    ImageCard, ImageCreateForm, AppAlert
   }
 }
 </script>

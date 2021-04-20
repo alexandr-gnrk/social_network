@@ -35,7 +35,7 @@ export default {
           'action': this.action
         }),
       };
-      await fetch('http://localhost:8000/images/api-like/', requestOptions);
+      await fetch('http://localhost:8000/images/api/like/', requestOptions);
       this.$emit('like-image')
     },
   }

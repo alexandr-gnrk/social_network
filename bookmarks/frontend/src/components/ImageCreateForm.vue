@@ -26,21 +26,17 @@
         ></v-text-field>
         <v-btn type="submit" class="mr-4" color="success">Create image</v-btn>
       </v-form>
-      <v-alert
-        v-if="alert"
-        class="mt-5"
-        dense
-        text
-        type="success"
-      >
-        {{ alert.title }}
-        {{ alert.text }}
-      </v-alert>
+
+      <AppAlert
+        :alert="alert"
+        @close="alert = null"
+      />
   </div>
 </template>
 
 
 <script>
+import AppAlert from '../components/AppAlert.vue';
 
 export default {
   name: "ImageCreateForm",
@@ -70,12 +66,13 @@ export default {
           },
           body: JSON.stringify(this.image)
         };
-        await fetch("http://127.0.0.1:8000/images/api-create/", requestOptions);
+        await fetch("http://127.0.0.1:8000/images/api/create-image/", requestOptions);
         this.$emit('create-image');
         this.image = {}
         this.alert = {
-          title: 'Success!',
-          text: `Image was created`
+          color: 'green',
+          type: 'success',
+          text: 'Image was created'
         }
       }
     },
@@ -89,6 +86,9 @@ export default {
       }
       return isValid
     }
+  },
+  components: {
+    AppAlert
   }
 }
 </script>

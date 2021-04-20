@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -23,8 +24,7 @@ import redis
 from django.conf import settings
 import stripe
 
-from .serializers import ImageSerializer, ImageDetailSerializer, ImageCreateSerializer, ImageRankingSerializer, \
-    ImageLikeSerializer
+from .serializers import ImageSerializer, ImageCreateSerializer, ImageRankingSerializer, ImageLikeSerializer
 
 r = redis.StrictRedis(host=settings.REDIS_HOST,
                       port=settings.REDIS_PORT,
@@ -37,8 +37,9 @@ stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
 class ImageViewSet(ModelViewSet):
     queryset = Image.objects.all()
     serializer_class = ImageSerializer
-    ordering = ['-created']
-    ordering_fields = ['user', 'title', 'created', 'users_like', 'total_likes']
+    filter_backends = [OrderingFilter]
+    ordering_fields = ['created', 'total_likes']
+    ordering = ['created']
     # permission_classes = [IsAuthenticatedOrReadOnly]
 
     def retrieve(self, request, *args, **kwargs):
@@ -47,17 +48,7 @@ class ImageViewSet(ModelViewSet):
         total_views = r.incr('image:{}:views'.format(image.id))
         # Увеличиваем рейтинг картинки на 1.
         r.zincrby('image_ranking', image.id, 1)
-
-        users_like = image.users_like.values_list(flat=True)
-        users_like_photo = []
-        for user_id in users_like:
-            user_photo = Profile.objects.get(id=user_id).photo
-            users_like_photo.append(str(user_photo))
-
-        serializer = ImageDetailSerializer(image, context={
-            'total_views': total_views,
-            'users_like_photo': users_like_photo
-        })
+        serializer = ImageSerializer(image, context={'total_views': total_views})
         return Response(serializer.data)
 
 
@@ -83,8 +74,9 @@ class ImageCreateView(APIView):
     def post(self, request):
         serializer = ImageCreateSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            serializer.save()
-            # create_action(request.user, 'bookmarked image', serializer)
+            user = serializer.validated_data['user']
+            new_image = serializer.save()
+            create_action(user, 'bookmarked image', new_image)
         return Response(serializer.data)
 
 
