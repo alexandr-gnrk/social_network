@@ -1,11 +1,11 @@
 <template>
   <v-row justify="left">
-
     <v-card
       v-for="user in users" :key="user.id"
-      class="mx-5"
+      class="ma-6"
       width="250"
       tile
+
     >
       <UserCard
         :photo="user.profile.photo"
@@ -14,7 +14,6 @@
         :id="user.id"      
       />
     </v-card>
-
   </v-row>
 </template>
 

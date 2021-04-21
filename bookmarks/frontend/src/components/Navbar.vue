@@ -18,9 +18,6 @@
     <v-btn text>
       <router-link :to = "{ name:'notifications' }" class="link"><span>Send mail</span></router-link>
     </v-btn>
-    <v-btn text>
-      <router-link :to = "{ name:'image-create' }" class="link"><span>Bookmarklet</span></router-link>
-    </v-btn>
 
     <v-spacer></v-spacer>
 

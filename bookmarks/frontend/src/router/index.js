@@ -9,7 +9,6 @@ import ChangePassword from '../views/ChangePassword'
 import ImageList from '../views/ImageList'
 import ImageDetail from '../views/ImageDetail'
 import ImageRanking from '../views/ImageRanking'
-import ImageCreate from '../views/ImageCreate'
 import Notifications from '../views/Notifications'
 import UserList from '../views/UserList'
 import UserDetail from '../views/UserDetail'
@@ -60,11 +59,6 @@ const routes = [
     path: '/image-ranking',
     name: 'image-ranking',
     component: ImageRanking
-  },
-  {
-    path: '/image-create',
-    name: 'image-create',
-    component: ImageCreate
   },
   {
     path: '/send',

@@ -3,7 +3,7 @@
     <v-app id="main">
       <Navbar />
       <v-main>
-        <v-container  fluid my-10 pa-4 class="grey lighten-5">
+        <v-container fluid px-4 py-12 grey lighten-4>
           <!-- If using vue-router -->
           <router-view></router-view>
         </v-container>

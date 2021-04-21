@@ -2,7 +2,7 @@
   <div>
     <v-row>
       <div
-        class="mx-auto mt-5"
+        class="mx-auto"
         v-for="image in images" :key="image.id"
       >
         <image-card

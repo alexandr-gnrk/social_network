@@ -1,7 +1,7 @@
 <template>
   <div>
 
-    <div class="pa-3 my-5">
+    <div class="pa-3">
       <h1 class="mb-5">Dashboard</h1>
       <p>Welcome to your dashboard, <strong>{{ person }}</strong>. You can edit your profile or 
         <router-link :to = "{ name:'change-password' }">change your password</router-link>.</p>
@@ -10,10 +10,12 @@
       <p>You can also edit your profile or change your password.</p>
     </div>
 
+    <Subscription />
+
     <v-card
       class="pa-2 mx-auto"
-      outlined
       tile
+      flat
     >
       <v-toolbar
         color="grey lighten-2"
@@ -73,6 +75,7 @@
 
 
 <script>
+import Subscription from '../components/Subscription.vue';
 
 export default {
   name: 'Dashboard',
@@ -99,7 +102,10 @@ export default {
   },
   created() {
     this.loadActions()
-  },  
+  },
+  components: {
+    Subscription
+  }
 }
 </script>
 

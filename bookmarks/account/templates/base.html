@@ -42,15 +42,6 @@
 				<div class="nav justify-content-end">
 					{% if user.is_authenticated %}
 						<span class="navbar-text">Hello, {{ user.username }} ::::: stripe_id ::::: {{ user.stripe_id }}</span>
-
-						{% comment %}
-						{% if user.stripe_id %}
-							<a class="btn text-light" href="#">PRO account</a>
-						{% else %}
-							<a class="btn text-light" href="#">Upgrade to PRO</a>
-						{% endif %}
-						{% endcomment %}
-
 						<a class="btn text-light" href="{% url 'logout' %}">Logout</a>
 					{% else %}
 						<span class="navbar-text">You are not logged in</span>

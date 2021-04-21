@@ -1,5 +1,4 @@
 from urllib.parse import urljoin
-
 import stripe
 from decouple import config
 from django.conf import settings
@@ -10,13 +9,57 @@ from django.shortcuts import redirect, get_object_or_404
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
-
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from account.tasks import send_mail_task
 from sub.models import Subscription
 
 stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
 endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
-domain = settings.STRIPE_SITE_URL
+backend_url = settings.STRIPE_BACKEND_URL
+frontend_url = settings.STRIPE_FRONTEND_URL
+
+
+class CheckoutSessionView(APIView):
+    """ Subscription to Basic plan API
+    """
+    def post(self, request):
+        user = request.user
+        try:
+            checkout_session = stripe.checkout.Session.create(
+                success_url=urljoin(frontend_url, 'subscription/success'),
+                cancel_url=urljoin(frontend_url, 'subscription/canceled'),
+                payment_method_types=['card'],
+                mode='subscription',
+                line_items=[
+                    {
+                        'price': settings.STRIPE_PLAN_BASIC_ID,
+                        'quantity': 1,
+                    }
+                ],
+                metadata={
+                    'username': user.username,
+                    'user_email': user.email,
+                }
+            )
+            return Response({'sessionId': checkout_session.id})
+        except Exception as e:
+            return Response({'error': {'message': str(e)}})
+
+
+class CustomerPortalView(APIView):
+    """ Manage billing API
+    """
+    def post(self, request):
+        user = request.user
+        customer = user.stripe_id
+
+        # Authenticate your user.
+        session = stripe.billing_portal.Session.create(
+            customer=customer,
+            return_url=frontend_url
+        )
+        return Response({'url': session.url})
 
 
 class CheckoutSession(View):
@@ -26,8 +69,8 @@ class CheckoutSession(View):
         user = request.user
 
         checkout_session = stripe.checkout.Session.create(
-            success_url=urljoin(domain, 'sub/success'),
-            cancel_url=urljoin(domain, 'sub/canceled'),
+            success_url=urljoin(backend_url, 'sub/success'),
+            cancel_url=urljoin(backend_url, 'sub/canceled'),
             payment_method_types=['card'],
             line_items=[
                 {
@@ -65,7 +108,7 @@ class CustomerPortal(View):
         # Authenticate your user.
         session = stripe.billing_portal.Session.create(
             customer=customer,
-            return_url=domain
+            return_url=backend_url
         )
         return redirect(session.url)
 

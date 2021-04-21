@@ -1,5 +1,5 @@
 <template>
-  <v-row class="mb-6">
+  <v-row>
 
     <v-col
       cols="2"
@@ -7,7 +7,7 @@
     >
       <v-card
         class="pa-2"
-        outlined
+        flat
         tile
       >
         <UserCard
@@ -50,7 +50,7 @@
     >
       <v-card
         class="pa-2"
-        outlined
+        flat
         tile
       >
         <v-row>

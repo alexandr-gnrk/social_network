@@ -1,8 +1,5 @@
-import os
-
 from decouple import config
 from django.core.mail import send_mass_mail
-from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import JsonResponse

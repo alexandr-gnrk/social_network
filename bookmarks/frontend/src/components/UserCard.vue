@@ -1,5 +1,4 @@
 <template>
-
     <v-list>
       <v-list-item>
         <v-list-item-avatar
@@ -11,7 +10,6 @@
           ></v-img>
         </v-list-item-avatar>
       </v-list-item>
-
       <v-list-item link
        router-link :to = "{ name: 'user-detail', params: { id: id } }"
       >
@@ -22,7 +20,6 @@
         </v-list-item-content>
       </v-list-item>
     </v-list>
-
 </template>
 
 
